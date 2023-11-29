@@ -1,55 +1,61 @@
-import minecraft_launcher_lib, os, subprocess
+import minecraft_launcher_lib, subprocess, os
 
 user_window = os.environ['USERNAME']
-minecraft_directory = f"C:/Users/{user_window}/AppData/Roaming/.iceLauncher"
+minecraft_direction = f"C:/Users/{user_window}/AppData/Roaming/.minecraftLauncher"
 
-# Ver todas las versiones que tengo instaladas
-versiones_instaladas = minecraft_launcher_lib.utils.get_installed_versions(minecraft_directory)
+# Ver todas las versiones que tengo instaladas y mostrarla en un desplegable
+versiones_instaladas = minecraft_launcher_lib.utils.get_installed_versions(minecraft_direction)
 
-def installar_minedraft():
-    # Instalar Minecraft
-    minecraft_version = input('Version: ')
-    minecraft_launcher_lib.install.install_minecraft_version(minecraft_version, minecraft_directory)
+versiones_instaladas_lista = []
+for version_instalada in versiones_instaladas:
+    versiones_instaladas_lista.append(version_instalada['id'])
+    print(version_instalada['id'])
 
-def install_forge():
-    # Instalar Forge
-    minecraft_version = input('Version: ')
-    forge = minecraft_launcher_lib.forge.find_forge_version(minecraft_version)
-    print(forge)
-    minecraft_launcher_lib.forge.install_forge_version(
-        forge, minecraft_directory)
-    print('Instalado forge')
+def instalar_minecraft():
+    minecraft_version_instalar = input("Porfavor intoduzca la version: ")
+
+    # Instalar minecraft
+    minecraft_launcher_lib.install.install_minecraft_version(minecraft_version_instalar, minecraft_direction)
+    print(version_instalada['id'])
+
+def instalar_forge():
+    # Instalar forge
+    minecraft_version_instalar = input("Porfavor intoduzca la version: ")
+    forge = minecraft_launcher_lib.forge.find_forge_version(minecraft_version_instalar)
+    minecraft_launcher_lib.forge.install_forge_version(forge,minecraft_direction)
+    print("Forge instalado")
 
 def ejecutar_minecraft():
-    mine_user = input('Porfavor introduzca su nombre: ')
-    version = input('Porfavor introduzca la version: ')
+    for version_instalada in versiones_instaladas:
+        print(version_instalada['id'])
+
+    minecraft_user = input("Porfavor intoduzca el nombre: ")
+    minecraft_version = input("Porfavor intoduzca la version: ")
 
     options = {
-        'username': mine_user,
-        'uuid' : '',
-        'token' : '',
+        'username': minecraft_user, # Nombre del usuario
+        'uuid': '',
+        'token': '',
 
-        'jvmArguments': ["-Xmx4G","-Xmx4G"], # Memoria ram que consumira el Minecraft
+        'jvmArguments': ["-Xmx4G","-Xmx4G"], # Ram que consumira el minecraft ahora esta puesta en 4
         'launcherVersion': "0.0.2"
     }
-    # Ejecutar Mnecraft
-    minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(version,minecraft_directory,options)
-    
+
+    minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(minecraft_version,minecraft_direction,options)
+
     subprocess.run(minecraft_command)
 
 
-
 def menu():
-    print('Bienvenido al launcher')
-    print(' Installar minecraft (0).\n Installar forge (1).\n Abrir minecraft (2)')
-    respuesta = input('Que quieres hacer: ')
-
-    if respuesta == '0':
-        installar_minedraft()
-    elif respuesta == '1':
-        install_forge()
-    elif respuesta == '2':
-        ejecutar_minecraft()
-
-
+    print("Bienvenido al launcher")
+    respuesta = int(input(" Para instalar minecraft (0)\n Para ejecutar minecraft (1)\n Para instalar forge (2)\n"))
+    
+    match respuesta:
+        case 2:
+            instalar_forge()
+        case 1:
+            ejecutar_minecraft()
+        case 0:
+            instalar_minecraft()
+        
 menu()
