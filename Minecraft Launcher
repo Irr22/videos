@@ -1,61 +1,61 @@
-import minecraft_launcher_lib, subprocess, os
+import minecraft_launcher_lib, os, subprocess
 
-user_window = os.environ['USERNAME']
-minecraft_direction = f"C:/Users/{user_window}/AppData/Roaming/.minecraftLauncher"
+user_window = os.environ["USERNAME"]
+minecraft_directori = f"C:/Users/{user_window}/AppData/Roaming/.minecraftLauncher"
 
-# Ver todas las versiones que tengo instaladas y mostrarla en un desplegable
-versiones_instaladas = minecraft_launcher_lib.utils.get_installed_versions(minecraft_direction)
+def instalar_minecraft(version):
+    if version:
+        minecraft_launcher_lib.install.install_minecraft_version(version,minecraft_directori)
+        print(f'Se ha instalado la version {version}')
+    else:
+        print('No se ingreso ninguna contraseña')
 
-versiones_instaladas_lista = []
-for version_instalada in versiones_instaladas:
-    versiones_instaladas_lista.append(version_instalada['id'])
-    print(version_instalada['id'])
+def instalar_forge(version):
+    forge = minecraft_launcher_lib.forge.find_forge_version(version)
+    minecraft_launcher_lib.forge.install_forge_version(forge,minecraft_directori)
+    print('Forge instalado')
 
-def instalar_minecraft():
-    minecraft_version_instalar = input("Porfavor intoduzca la version: ")
-
-    # Instalar minecraft
-    minecraft_launcher_lib.install.install_minecraft_version(minecraft_version_instalar, minecraft_direction)
-    print(version_instalada['id'])
-
-def instalar_forge():
-    # Instalar forge
-    minecraft_version_instalar = input("Porfavor intoduzca la version: ")
-    forge = minecraft_launcher_lib.forge.find_forge_version(minecraft_version_instalar)
-    minecraft_launcher_lib.forge.install_forge_version(forge,minecraft_direction)
-    print("Forge instalado")
-
-def ejecutar_minecraft():
-    for version_instalada in versiones_instaladas:
-        print(version_instalada['id'])
-
-    minecraft_user = input("Porfavor intoduzca el nombre: ")
-    minecraft_version = input("Porfavor intoduzca la version: ")
+def ejecutar_minecraft(nombre,vers):
+    mine_user = nombre
+    version = vers
 
     options = {
-        'username': minecraft_user, # Nombre del usuario
-        'uuid': '',
+        'username': mine_user,
+        'uuid' : '',
         'token': '',
 
-        'jvmArguments': ["-Xmx4G","-Xmx4G"], # Ram que consumira el minecraft ahora esta puesta en 4
+        'jvArguments': ["-Xmx4G","-Xmx4G"], # 4G es para 4 de gigas de RAM
         'launcherVersion': "0.0.2"
     }
 
-    minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(minecraft_version,minecraft_direction,options)
-
+    minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(version,minecraft_directori,options)
     subprocess.run(minecraft_command)
 
-
 def menu():
-    print("Bienvenido al launcher")
-    respuesta = int(input(" Para instalar minecraft (0)\n Para ejecutar minecraft (1)\n Para instalar forge (2)\n"))
-    
-    match respuesta:
-        case 2:
-            instalar_forge()
-        case 1:
-            ejecutar_minecraft()
-        case 0:
-            instalar_minecraft()
+    while True:
         
+        versiones_instaladas = minecraft_launcher_lib.utils.get_installed_versions(minecraft_directori)
+        if len(versiones_instaladas) == 0:
+            print('No tienes versiones instaladas')
+        else:
+            for ver in versiones_instaladas:
+                print(ver['id'])
+                
+        print('Bienvenido al launcher de Minecraft')
+        respuesta = int(input('Para instalar una version (0) \nPara instalar forge (1) \nPara ejecutar minecraft (2) \nPara para launcher (3)\n'))
+
+        match respuesta:
+            case 0:
+                version = input('Que version: ')
+                instalar_minecraft(version)
+            case 1:
+                version = input('Que version: ')
+                instalar_forge(version)
+            case 2:
+                nombre = input('Tu nombre: ')
+                version = input('Que version: ')
+                ejecutar_minecraft(nombre,version)
+            case 3:
+                break
+
 menu()
