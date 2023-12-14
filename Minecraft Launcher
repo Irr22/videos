@@ -1,61 +1,108 @@
-import minecraft_launcher_lib, os, subprocess
+import minecraft_launcher_lib, os, subprocess, tkinter
+
+ventana = tkinter.Tk()
+ventana.geometry('500x500') # El tamño de la pantalla
+ventana.title('El titulo que quieras')
+ventana.resizable(False,False) # Para que no se puedad canviar el tamaño
 
 user_window = os.environ["USERNAME"]
 minecraft_directori = f"C:/Users/{user_window}/AppData/Roaming/.minecraftLauncher"
 
-def instalar_minecraft(version):
+bt_ejecutar_minecraft = tkinter.Button()
+bt_instalar_versiones = tkinter.Button()
+bt_instalar_forge = tkinter.Button()
+
+label_nombre = tkinter.Label(text='Tu nombre')
+laber_ram = tkinter.Label(text='La ram que vas a usar')
+
+entry_versiones = tkinter.Entry()
+entry_nombre = tkinter.Entry()
+entry_ram = tkinter.Entry()
+
+# Ver todas las versiones que tengo instaladas y mostrarla en un desplegable
+versiones_instaladas = minecraft_launcher_lib.utils.get_installed_versions(minecraft_directori)
+
+versiones_instaladas_lista = []
+for versiones_instaladas in versiones_instaladas:
+    versiones_instaladas_lista.append(versiones_instaladas['id'])
+
+if len(versiones_instaladas_lista) != 0: # Comprovar haver si ahy versiones instaladas
+    vers = tkinter.StringVar(ventana)
+    vers.set(versiones_instaladas_lista[0])
+elif len(versiones_instaladas_lista) == 0:
+    vers = 'sin versiones instaladas'
+    versiones_instaladas_lista.append('sin versiones instaladas')
+
+versiones_menu_desplegable = tkinter.OptionMenu(ventana, vers, *versiones_instaladas_lista) # Para crear el desplegable con donde se va a crear que va a mostrar y que opciones tiene
+versiones_menu_desplegable.config()
+
+def instalar_minecraft():
+    version = entry_versiones.get()
     if version:
         minecraft_launcher_lib.install.install_minecraft_version(version,minecraft_directori)
         print(f'Se ha instalado la version {version}')
     else:
-        print('No se ingreso ninguna contraseña')
+        print('No se ingreso ninguna version')
 
-def instalar_forge(version):
+def instalar_forge():
+    version = entry_versiones.get()
     forge = minecraft_launcher_lib.forge.find_forge_version(version)
     minecraft_launcher_lib.forge.install_forge_version(forge,minecraft_directori)
     print('Forge instalado')
 
-def ejecutar_minecraft(nombre,vers):
-    mine_user = nombre
-    version = vers
+def ejecutar_minecraft():
+    mine_user = entry_nombre.get()
+    version = vers.get()
+    ram = f"-Xmx{entry_ram.get()}G"
 
     options = {
         'username': mine_user,
         'uuid' : '',
         'token': '',
 
-        'jvArguments': ["-Xmx4G","-Xmx4G"], # 4G es para 4 de gigas de RAM
+        'jvArguments': [ram,ram], # 4G es para 4 de gigas de RAM
         'launcherVersion': "0.0.2"
     }
 
+    ventana.destroy()
     minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(version,minecraft_directori,options)
     subprocess.run(minecraft_command)
 
+def instalar_versiones_normales():
+    global entry_versiones
+    ventana_versiones = tkinter.Toplevel(ventana)
+    entry_versiones = tkinter.Entry(ventana_versiones)
+    entry_versiones.place(x=0,y=0) # Podeis poner la posicion como querais
+
+    bt_instalar_vers = tkinter.Button(ventana_versiones,command=instalar_minecraft,text='Instalar')
+    bt_instalar_vers.place(x=0,y=50) # Podeis poner la posicion como querais
+
+def instalar_versiones_forge():
+    global entry_versiones
+    ventana_versiones = tkinter.Toplevel(ventana)
+    entry_versiones = tkinter.Entry(ventana_versiones)
+    entry_versiones.place(x=0,y=0) # Podeis poner la posicion como querais
+
+    bt_instalar_vers = tkinter.Button(ventana_versiones,command=instalar_forge,text='Instalar')
+    bt_instalar_vers.place(x=0,y=50) # Podeis poner la posicion como querais
+
+
 def menu():
-    while True:
+    bt_instalar_versiones.config(command=instalar_versiones_normales,text='Instalar versiones')
+    bt_instalar_versiones.place(x=300,y=0)
+
+    bt_instalar_forge.config(command=instalar_versiones_forge,text='Instalar forge')
+    bt_instalar_forge.place(x=300,y=50)
+
+    label_nombre.place(x=0,y=0)
+    laber_ram.place(x=0,y=100)
+
+    entry_nombre.place(x=0,y=20)
+    entry_ram.place(x=0,y=120)
+
+    bt_ejecutar_minecraft.config(command=ejecutar_minecraft,text='Iniciar')
+    bt_ejecutar_minecraft.place(x=100,y=400)
+    versiones_menu_desplegable.place(x=0,y=400)
         
-        versiones_instaladas = minecraft_launcher_lib.utils.get_installed_versions(minecraft_directori)
-        if len(versiones_instaladas) == 0:
-            print('No tienes versiones instaladas')
-        else:
-            for ver in versiones_instaladas:
-                print(ver['id'])
-                
-        print('Bienvenido al launcher de Minecraft')
-        respuesta = int(input('Para instalar una version (0) \nPara instalar forge (1) \nPara ejecutar minecraft (2) \nPara para launcher (3)\n'))
-
-        match respuesta:
-            case 0:
-                version = input('Que version: ')
-                instalar_minecraft(version)
-            case 1:
-                version = input('Que version: ')
-                instalar_forge(version)
-            case 2:
-                nombre = input('Tu nombre: ')
-                version = input('Que version: ')
-                ejecutar_minecraft(nombre,version)
-            case 3:
-                break
-
+    ventana.mainloop()
 menu()
