@@ -1,4 +1,4 @@
-import minecraft_launcher_lib, os, subprocess, tkinter
+import minecraft_launcher_lib, os, subprocess, tkinter, json
 
 ventana = tkinter.Tk()
 ventana.geometry('500x500') # El tamño de la pantalla
@@ -8,6 +8,7 @@ ventana.resizable(False,False) # Para que no se puedad canviar el tamaño
 user_window = os.environ["USERNAME"]
 minecraft_directori = f"C:/Users/{user_window}/AppData/Roaming/.minecraftLauncher"
 
+bt_guardar_datos = tkinter.Button()
 bt_ejecutar_minecraft = tkinter.Button()
 bt_instalar_versiones = tkinter.Button()
 bt_instalar_forge = tkinter.Button()
@@ -18,6 +19,9 @@ laber_ram = tkinter.Label(text='La ram que vas a usar')
 entry_versiones = tkinter.Entry()
 entry_nombre = tkinter.Entry()
 entry_ram = tkinter.Entry()
+
+#variable para identificar si se desea guardar los datos 
+vopcion = tkinter.IntVar()
 
 versiones_forge = [0]
 
@@ -37,6 +41,53 @@ elif len(versiones_instaladas_lista) == 0:
 
 versiones_menu_desplegable = tkinter.OptionMenu(ventana, vers, *versiones_instaladas_lista) # Para crear el desplegable con donde se va a crear que va a mostrar y que opciones tiene
 versiones_menu_desplegable.config()
+
+#para no tener que escribir los datos cada que se abre el launcher
+def recordar_datos():
+    datos = {
+        "usuario" : entry_nombre.get(),
+        "ram" : entry_ram.get(),
+    }
+    #todavía no se me ocurre como recordar la versión ya que se debe extraer el
+    #índice del combobox 
+
+    #acá lo que se hace es guardar toda la información en el Json
+    json_datos = json.dumps(datos, indent=4)
+
+    with open("datos_usuario.json", "w") as informacion:
+        informacion.write(json_datos)
+    
+    #si el usuario no seleccionó la palomita de guardar información, 
+    #el Json se limpia 
+    if vopcion.get() == 0:
+        datos = {}
+        json_datos = json.dumps(datos, indent=4)
+        with open("datos_usuario.json", "w") as informacion:
+            informacion.write(json_datos)
+
+#cuando se abre el launcher se establecen los datos guardandos en sus correspondientes campos
+def cargar_informacion():
+    #leemos el Json
+    with open("datos_usuario.json","r") as informacion:
+        datos = json.load(informacion)
+
+    #extraemos el nombre del usuario
+    nombre = datos.get("usuario", None)
+    #la ram que posteriormente guardó
+    ram = datos.get("ram", None)
+
+    #si no detecta ningún nombre significa el archivo Json está vació 
+    if nombre != None:
+        #en tkinter no hay algo como el setter de Java para los campos de 
+        #inserción de datos  pero tiene el metodo insert
+        entry_nombre.insert(0, nombre)
+        entry_ram.insert(0, ram)
+        #establezco la variable en 1 para que los usuarios que quieren recordar sus datos
+        #tengan la opción habilitada cada que inicien el launcher
+        vopcion.set(1)
+
+
+
 
 def instalar_minecraft():
     version = entry_versiones.get()
@@ -132,6 +183,17 @@ def saver_versiones_instaladas_forge(version):
     return versiones_forge_instaladas
 
 def menu():
+
+
+
+    #se crea el widget check button para dar a elegir si guardar los datos o no
+    chb_recordar = tkinter.Checkbutton(ventana,text= "Recordar datos", width= 25, variable= vopcion ).place(x=2,y=150)
+    
+    cargar_informacion()
+    
+    bt_guardar_datos.config(command=recordar_datos,text='Guardar', background="#33FF33")
+    bt_guardar_datos.place(x=55,y=170)
+
     bt_instalar_versiones.config(command=instalar_versiones_normales,text='Instalar versiones')
     bt_instalar_versiones.place(x=300,y=0)
 
