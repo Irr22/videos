@@ -1,9 +1,21 @@
 import minecraft_launcher_lib, os, subprocess, tkinter
 
+archivo = 'configuracion.txt'
+informacion = []
+
+if os.path.exists(archivo):
+    with open(archivo, 'r') as f:
+        for lin in f:
+            informacion.append(lin)
+else:
+    with open(archivo, 'w') as f:
+        f.write(' ')
+
 ventana = tkinter.Tk()
 ventana.geometry('500x500') # El tamño de la pantalla
 ventana.title('El titulo que quieras')
 ventana.resizable(False,False) # Para que no se puedad canviar el tamaño
+ventana.config(bg='green')
 
 user_window = os.environ["USERNAME"]
 minecraft_directori = f"C:/Users/{user_window}/AppData/Roaming/.minecraftLauncher"
@@ -12,8 +24,8 @@ bt_ejecutar_minecraft = tkinter.Button()
 bt_instalar_versiones = tkinter.Button()
 bt_instalar_forge = tkinter.Button()
 
-label_nombre = tkinter.Label(text='Tu nombre')
-laber_ram = tkinter.Label(text='La ram que vas a usar')
+label_nombre = tkinter.Label(text='Tu nombre',bg='green')
+laber_ram = tkinter.Label(text='La ram que vas a usar',bg='green')
 
 entry_versiones = tkinter.Entry()
 entry_nombre = tkinter.Entry()
@@ -65,6 +77,10 @@ def ejecutar_minecraft():
         'launcherVersion': "0.0.2"
     }
 
+    with open(archivo, 'w') as f:
+        f.writelines(mine_user)
+        f.writelines(str(entry_ram.get()))
+
     ventana.destroy()
     minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(version,minecraft_directori,options)
     subprocess.run(minecraft_command)
@@ -80,6 +96,7 @@ def instalar_versiones_normales():
 
 def instalar_versiones_forge():
     global entry_versiones, versiones_forge, vers_forge, versiones_forge_menu_desplegable
+
     ventana_versiones = tkinter.Toplevel(ventana)
     entry_versiones = tkinter.Entry(ventana_versiones)
     entry_versiones.place(x=0,y=0) # Podeis poner la posicion como querais
@@ -122,7 +139,7 @@ def saver_versiones_instaladas_forge(version):
                         ultima_terminacion = version_de_minecraft[5]
                         ultima_version = version_de_minecraft[0:6]
 
-        elif int(numero) >= 1 and version_de_minecraft[5] == '.' or version_de_minecraft[5] == '-':
+        elif int(numero) >= 1 and version_de_minecraft[3] == '.':
             if ultima_version != version_de_minecraft[0:5]:
                 if version_de_minecraft[2] == str(numero):
                     versiones_forge_instaladas.append(version_de_minecraft)
@@ -132,22 +149,27 @@ def saver_versiones_instaladas_forge(version):
     return versiones_forge_instaladas
 
 def menu():
-    bt_instalar_versiones.config(command=instalar_versiones_normales,text='Instalar versiones')
+    bt_instalar_versiones.config(command=instalar_versiones_normales,text='Instalar versiones',bg='brown')
     bt_instalar_versiones.place(x=300,y=0)
 
-    bt_instalar_forge.config(command=instalar_versiones_forge,text='Instalar forge')
+    bt_instalar_forge.config(command=instalar_versiones_forge,text='Instalar forge',bg='brown')
     bt_instalar_forge.place(x=300,y=50)
 
     label_nombre.place(x=0,y=0)
     laber_ram.place(x=0,y=100)
 
     entry_nombre.place(x=0,y=20)
-    entry_ram.place(x=0,y=120)
+    entry_nombre.insert(0,informacion[0])
+    entry_nombre.config(bg='brown')
 
-    bt_ejecutar_minecraft.config(command=ejecutar_minecraft,text='Iniciar')
+    entry_ram.place(x=0,y=120)
+    entry_ram.insert(0,informacion[1])
+    entry_ram.config(bg='brown')
+
+    bt_ejecutar_minecraft.config(command=ejecutar_minecraft,text='Iniciar',bg='brown')
     bt_ejecutar_minecraft.place(x=200,y=400)
     versiones_menu_desplegable.place(x=0,y=400)
+    versiones_menu_desplegable.config(bg='green')
         
     ventana.mainloop()
-
 menu()
